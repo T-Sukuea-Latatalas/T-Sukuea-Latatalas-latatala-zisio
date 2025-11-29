@@ -1,4 +1,3 @@
-
 <html lang="ja"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +15,6 @@
         body {
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
             background-color: var(--bg-dark-1);
-            /* 背景のボーダー処理 */
             background-image: repeating-linear-gradient(
                 0deg,
                 var(--bg-dark-1),
@@ -33,7 +31,7 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background-color: rgba(0, 0, 0, 0.8); /* 背景が見えるように半透明 */
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 15px rgba(0,0,0,0.8);
@@ -47,14 +45,12 @@
             padding-bottom: 10px;
         }
 
-        /* フォントアップロードエリア */
         .font-uploader {
             text-align: right;
             margin-bottom: 20px;
             font-size: 0.9rem;
         }
 
-        /* 管理パネル（公開時は非表示） */
         .admin-panel {
             background-color: #1a221a;
             padding: 15px;
@@ -75,12 +71,13 @@
             flex-wrap: wrap;
         }
 
-        input, select, button {
+        input, select, button, textarea {
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #444;
             background-color: #222;
             color: white;
+            font-family: inherit;
         }
 
         button {
@@ -88,6 +85,7 @@
             border: none;
             cursor: pointer;
             transition: background 0.3s;
+            color: white;
         }
 
         button:hover {
@@ -105,7 +103,6 @@
             width: 100%;
         }
 
-        /* 検索とソート */
         .controls {
             display: flex;
             justify-content: space-between;
@@ -114,7 +111,6 @@
             gap: 10px;
         }
 
-        /* タブ */
         .tabs {
             display: flex;
             gap: 5px;
@@ -135,7 +131,6 @@
             font-weight: bold;
         }
 
-        /* 単語リスト */
         .word-list {
             list-style: none;
             padding: 0;
@@ -174,11 +169,6 @@
             font-weight: bold;
         }
 
-        /* ラタタラ語カスタムフォント用クラス */
-        .ratatara-text {
-            /* JSでフォントファミリーを適用 */
-        }
-
         .word-pronunciation {
             font-size: 1rem;
             color: #fff;
@@ -204,7 +194,59 @@
             margin-top: 5px;
         }
 
-        /* レスポンシブ */
+        /* モーダルウィンドウ用スタイル */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1a221a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--main-green);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .code-area {
+            flex: 1;
+            min-height: 300px;
+            background: #111;
+            color: #eee;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #444;
+            resize: vertical;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        .modal-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
         @media (max-width: 600px) {
             .controls, .input-group {
                 flex-direction: column;
@@ -259,7 +301,7 @@
         </div>
         <div id="validationMsg" class="error-msg" style="display: none;"></div>
         
-        <button class="export-btn" onclick="downloadPublicHtml()">一般公開用に書き出し (index.html)</button>
+        <button class="export-btn" onclick="showPublicCode()">一般公開用コードを表示</button>
     </div>
 
     <!-- 検索とソート -->
@@ -273,72 +315,101 @@
     </div>
 
     <!-- タブ -->
-    <div class="tabs" id="posTabs"><button class="tab-btn active" onclick="filterByPos('all')">すべて</button><button class="tab-btn ">名詞</button><button class="tab-btn ">動詞</button><button class="tab-btn ">形容詞</button></div>
+    <div class="tabs" id="posTabs"><button class="tab-btn " onclick="filterByPos('all')">すべて</button><button class="tab-btn ">名詞</button><button class="tab-btn active">動詞</button><button class="tab-btn ">形容詞</button></div>
 
     <!-- 単語リスト -->
     <ul class="word-list" id="wordList"><li>
                 <div class="word-card">
                     <div class="word-info">
-                        <span class="word-japanese">ラタタラ語 <small>[名詞]</small></span>
-                        <span class="word-ratatara ratatara-text">latatalot</span>
-                        <span class="word-pronunciation">/latatalot/</span>
-                        <div class="word-meta">更新: 2025/11/23</div>
+                        <span class="word-japanese">～したい <small>[動詞]</small></span>
+                        <span class="word-ratatara ratatara-text">kop</span>
+                        <span class="word-pronunciation">/kop/</span>
+                        <div class="word-meta">更新: 2025/11/29</div>
                     </div>
                     
                 <div class="card-actions">
-                    <button class="delete-btn" onclick="deleteWord(1763897897732)">削除</button>
-                </div>
-            
-                </div>
-            </li><li>
-                <div class="word-card">
-                    <div class="word-info">
-                        <span class="word-japanese">逃亡 <small>[名詞]</small></span>
-                        <span class="word-ratatara ratatara-text">nawengo</span>
-                        <span class="word-pronunciation">/nawengo/</span>
-                        <div class="word-meta">更新: 2025/11/23</div>
-                    </div>
-                    
-                <div class="card-actions">
-                    <button class="delete-btn" onclick="deleteWord(1763897747901)">削除</button>
-                </div>
-            
-                </div>
-            </li><li>
-                <div class="word-card">
-                    <div class="word-info">
-                        <span class="word-japanese">反抗 <small>[名詞]</small></span>
-                        <span class="word-ratatara ratatara-text">sitevale</span>
-                        <span class="word-pronunciation">/sitevale/</span>
-                        <div class="word-meta">更新: 2025/11/23</div>
-                    </div>
-                    
-                <div class="card-actions">
-                    <button class="delete-btn" onclick="deleteWord(1763897696535)">削除</button>
-                </div>
-            
-                </div>
-            </li><li>
-                <div class="word-card">
-                    <div class="word-info">
-                        <span class="word-japanese">謝罪 <small>[名詞]</small></span>
-                        <span class="word-ratatara ratatara-text">latatala</span>
-                        <span class="word-pronunciation">/latatala/</span>
-                        <div class="word-meta">更新: 2025/11/23</div>
-                    </div>
-                    
-                <div class="card-actions">
-                    <button class="delete-btn" onclick="deleteWord(1763897674775)">削除</button>
+                    <button class="delete-btn" onclick="deleteWord(1764408531695)">削除</button>
                 </div>
             
                 </div>
             </li></ul>
 </div>
 
+<!-- コード表示用モーダル -->
+<div class="modal-overlay" id="codeModal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>公開用コード (index.html)</h3>
+            <button onclick="closeModal()" style="background:#555;">閉じる</button>
+        </div>
+        <div style="margin-bottom:10px; font-size:0.9rem; color:#ccc;">
+            以下のコードをすべてコピーして、<b>index.html</b> という名前で保存してください。
+        </div>
+        <textarea class="code-area" id="generatedCode" readonly=""></textarea>
+        <div class="modal-actions">
+            <button onclick="copyToClipboard()">コードをコピー</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // --- IndexedDB ヘルパー (フォント保存用) ---
+    // localStorageは容量制限(約5MB)がありフォント保存に不向きなため、IndexedDBを使用します。
+    const DB_NAME = 'RatataraDB';
+    const STORE_NAME = 'assets';
+    const KEY_NAME = 'customFont';
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onerror = (event) => reject('Database error: ' + event.target.errorCode);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                }
+            };
+            request.onsuccess = (event) => resolve(event.target.result);
+        });
+    }
+
+    async function saveFontToDB(base64Data) {
+        try {
+            const db = await openDB();
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            store.put(base64Data, KEY_NAME);
+            return new Promise((resolve, reject) => {
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        } catch (e) {
+            console.error("Font Save Error:", e);
+            alert("フォントの保存に失敗しました。");
+        }
+    }
+
+    async function loadFontFromDB() {
+        try {
+            const db = await openDB();
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const store = tx.objectStore(STORE_NAME);
+            const request = store.get(KEY_NAME);
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (e) {
+            console.error("Font Load Error:", e);
+            return null;
+        }
+    }
+
+    // --- メイン処理 ---
+    
     // 初期データ構造
     let partsOfSpeech = JSON.parse('["名詞","動詞","形容詞"]');
-    let words = JSON.parse('[{"id":1763897674775,"japanese":"謝罪","ratatara":"latatala","pronunciation":"latatala","pos":"名詞","updatedAt":1763897674775},{"id":1763897696535,"japanese":"反抗","ratatara":"sitevale","pronunciation":"sitevale","pos":"名詞","updatedAt":1763897696535},{"id":1763897747901,"japanese":"逃亡","ratatara":"nawengo","pronunciation":"nawengo","pos":"名詞","updatedAt":1763897747901},{"id":1763897897732,"japanese":"ラタタラ語","ratatara":"latatalot","pronunciation":"latatalot","pos":"名詞","updatedAt":1763897897732}]');
+    let words = JSON.parse('[{"id":1763897674775,"japanese":"謝罪","ratatara":"latatala","pronunciation":"latatala","pos":"名詞","updatedAt":1763897674775},{"id":1763897696535,"japanese":"反抗","ratatara":"sitevale","pronunciation":"sitevale","pos":"名詞","updatedAt":1763897696535},{"id":1763897747901,"japanese":"逃亡","ratatara":"nawengo","pronunciation":"nawengo","pos":"名詞","updatedAt":1763897747901},{"id":1763897897732,"japanese":"ラタタラ語","ratatara":"latatalot","pronunciation":"latatalot","pos":"名詞","updatedAt":1763897897732},{"id":1764407944963,"japanese":"1","ratatara":"1","pronunciation":"mogek","pos":"名詞","updatedAt":1764407944963},{"id":1764407952787,"japanese":"2","ratatara":"2","pronunciation":"hangak","pos":"名詞","updatedAt":1764407952787},{"id":1764407966420,"japanese":"3","ratatara":"3","pronunciation":"donsek","pos":"名詞","updatedAt":1764407966420},{"id":1764407985858,"japanese":"4","ratatara":"4","pronunciation":"sipofik","pos":"名詞","updatedAt":1764407985858},{"id":1764407995108,"japanese":"0","ratatara":"0","pronunciation":"kukuk","pos":"名詞","updatedAt":1764407995108},{"id":1764408048722,"japanese":"円・丸","ratatara":":di:oben","pronunciation":"dioben","pos":"名詞","updatedAt":1764408048722},{"id":1764408084926,"japanese":"線路","ratatara":"bois","pronunciation":"bois","pos":"名詞","updatedAt":1764408084926},{"id":1764408531695,"japanese":"～したい","ratatara":"kop","pronunciation":"kop","pos":"動詞","updatedAt":1764408531695}]');
     let currentFilter = 'all';
     let customFontData = 'data:application/octet-stream;base64,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';
 
@@ -346,13 +417,24 @@
     const IS_ADMIN = false; 
 
     // 初期化処理
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
         if (!IS_ADMIN) {
             document.getElementById('admin-panel').style.display = 'none';
             document.getElementById('font-uploader-area').style.display = 'none';
+        } else {
+            // 管理モードの場合のみ、DBからフォントを読み込む
+            const savedFont = await loadFontFromDB();
+            if (savedFont) {
+                customFontData = savedFont;
+                applyFont(customFontData);
+            }
         }
         
-        loadFont();
+        // もし公開モードでハードコードされたフォントがある場合はここで適用される(書き出し後の動作)
+        if (!IS_ADMIN && typeof customFontData === 'string' && customFontData !== 'null') {
+             applyFont(customFontData);
+        }
+
         updatePosSelect();
         renderTabs();
         renderWords();
@@ -364,26 +446,20 @@
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = function(e) {
-            customFontData = e.target.result;
-            // ローカルストレージの容量制限(約5MB)に注意。フォントが大きいと保存できない場合があります。
-            try {
-                localStorage.setItem('ratatara_font_data', customFontData);
-            } catch(err) {
-                console.warn("フォントサイズが大きすぎて保存できませんでしたが、一時的に適用します。");
-            }
-            applyFont(customFontData);
+        reader.onload = async function(e) {
+            const base64 = e.target.result;
+            customFontData = base64;
+            
+            // DBに保存
+            await saveFontToDB(base64);
+            
+            applyFont(base64);
         };
         reader.readAsDataURL(file);
     });
 
-    function loadFont() {
-        if (customFontData) {
-            applyFont(customFontData);
-        }
-    }
-
     function applyFont(dataUrl) {
+        if (!dataUrl) return;
         const styleId = 'custom-font-style';
         let styleTag = document.getElementById(styleId);
         if (!styleTag) {
@@ -523,7 +599,7 @@
         // ソート
         filtered.sort((a, b) => {
             if (sortType === 'date') {
-                return b.updatedAt - a.updatedAt; // 新しい順
+                return b.updatedAt - a.updatedAt;
             } else if (sortType === 'kana') {
                 return a.japanese.localeCompare(b.japanese, 'ja');
             } else if (sortType === 'alpha') {
@@ -557,9 +633,9 @@
         });
     }
 
-    // --- 公開用書き出し機能 ---
+    // --- 公開用コード書き出し (表示) ---
 
-    function downloadPublicHtml() {
+    function showPublicCode() {
         // 現在のHTMLを取得
         let htmlContent = document.documentElement.outerHTML;
 
@@ -567,34 +643,51 @@
         htmlContent = htmlContent.replace('const IS_ADMIN = true;', 'const IS_ADMIN = false;');
 
         // 2. 現在のデータをハードコードして埋め込む
-        // localStorage.getItem... の部分を、現在の変数の値で上書きする
         const embeddedWords = JSON.stringify(words).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const embeddedPos = JSON.stringify(partsOfSpeech).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        
         // フォントデータがあれば埋め込む
         const embeddedFont = customFontData ? `'${customFontData}'` : 'null';
 
-        // ローカルストレージ読み込み行を無効化し、直接データを代入するコードに置換
+        // 3. データ読み込み部分のコードを置換
+        // (localStorageやDB読み込みの代わりに、埋め込んだ変数を使うようにする)
+        
+        // words
         htmlContent = htmlContent.replace(
             `let words = JSON.parse(localStorage.getItem('ratatara_words')) || [];`,
             `let words = JSON.parse('${embeddedWords}');`
         );
+        // partsOfSpeech
         htmlContent = htmlContent.replace(
             `let partsOfSpeech = JSON.parse(localStorage.getItem('ratatara_pos')) || ['名詞', '動詞', '形容詞'];`,
             `let partsOfSpeech = JSON.parse('${embeddedPos}');`
         );
+        // customFontData (初期化行を変更)
         htmlContent = htmlContent.replace(
-            `let customFontData = localStorage.getItem('ratatara_font_data') || null;`,
+            `let customFontData = null; // メモリ上のフォントデータ`,
             `let customFontData = ${embeddedFont};`
         );
 
-        // ファイルダウンロード処理
-        const blob = new window.Blob([htmlContent], { type: 'text/html' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'index.html';
-        a.click();
-        window.URL.revokeObjectURL(url);
+        // 不要になるIndexedDB関連のスクリプトブロックを無効化または削除する工夫も可能ですが、
+        // IS_ADMIN = false により実行されないため、そのままでも機能します。
+
+        // モーダルを表示
+        const textarea = document.getElementById('generatedCode');
+        textarea.value = htmlContent;
+        document.getElementById('codeModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('codeModal').style.display = 'none';
+    }
+
+    function copyToClipboard() {
+        const textarea = document.getElementById('generatedCode');
+        textarea.select();
+        textarea.setSelectionRange(0, 999999); // モバイル対応
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            alert("コードをコピーしました！");
+        });
     }
 
 </script>
