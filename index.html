@@ -6,7 +6,7 @@
     <title>ラタタラ辞書 - DATABASE</title>
     <style>
         /* --- 全体リセット --- */
-        * { box-sizing: border-box; } /* 余白による幅崩れを防止 */
+        * { box-sizing: border-box; }
 
         /* --- フォント設定 --- */
         @font-face {
@@ -30,6 +30,34 @@
             display: flex; flex-direction: column; overflow: hidden;
         }
 
+        /* --- ローディング画面 --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #05050a; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+        #loader.hidden { opacity: 0; visibility: hidden; }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(0, 240, 255, 0.1);
+            border-top: 3px solid #00f0ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .loader-text {
+            color: #00f0ff; font-family: monospace; font-size: 0.8rem;
+            letter-spacing: 2px; text-transform: uppercase;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* --- メインコンテンツ --- */
         header { padding: 15px 15px 0 15px; flex-shrink: 0; }
         h1 { 
             text-align: center; color: #00f0ff; font-size: 1.2rem;
@@ -38,7 +66,6 @@
         }
         #status { text-align: center; font-family: monospace; font-size: 0.6rem; color: #00f0ff; margin-bottom: 10px; }
 
-        /* フィルター */
         .filter-area {
             background: rgba(10, 15, 25, 0.8); border: 1px solid #1a4a5e;
             padding: 8px; border-radius: 4px; margin-bottom: 10px;
@@ -51,21 +78,17 @@
         }
         .pos-btn.active { border-color: #00f0ff; color: #00f0ff; background: rgba(0, 240, 255, 0.1); }
 
-        /* メインレイアウト */
         .main-content {
             display: flex; flex: 1; overflow: hidden;
             border-top: 1px solid #1a4a5e; position: relative;
         }
 
-        /* 左側：リスト */
         .list-section {
             flex: 3; overflow-y: auto; padding: 15px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 12px; align-content: flex-start;
         }
 
-        /* 右側：詳細 */
         .detail-section {
             flex: 1.2; background: rgba(5, 5, 15, 0.98);
             border-left: 1px solid #00f0ff; padding: 20px;
@@ -73,7 +96,6 @@
             min-width: 300px; transition: transform 0.3s ease;
         }
 
-        /* 単語カード（右端フェード修正） */
         .word-card { 
             background: rgba(255, 255, 255, 0.03); border: 1px solid #1a4a5e;
             padding: 12px; cursor: pointer; transition: 0.2s;
@@ -84,7 +106,6 @@
         .word-card:hover { border-color: #00f0ff; background: rgba(0, 240, 255, 0.08); }
         .word-card.selected { border-color: #ff2a7a; background: rgba(255, 42, 122, 0.1); }
 
-        /* フェード効果：長い単語の右端を透過させる */
         .card-lata, .card-jp {
             display: block; white-space: nowrap; overflow: hidden;
             -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
@@ -93,7 +114,6 @@
         .card-lata { font-size: 1.3rem; color: #ff2a7a; margin-bottom: 2px; }
         .card-jp { font-size: 0.8rem; color: #ffffff; opacity: 0.8; }
 
-        /* 詳細パネル */
         .detail-header { border-bottom: 1px solid #ff2a7a; margin-bottom: 15px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .detail-lata { font-size: 2rem; color: #ff2a7a; text-shadow: 0 0 10px rgba(255, 42, 122, 0.5); }
         .close-detail { display: none; background: #ff2a7a; color: white; border: none; padding: 8px 15px; font-size: 0.8rem; cursor: pointer; border-radius: 2px; }
@@ -114,7 +134,6 @@
         .idiom-lata { color: #ff2a7a; font-size: 1.1rem; }
         .idiom-jp { font-size: 0.8rem; margin-left: 8px; }
 
-        /* 外来語 */
         .origin-info { color: #8ab4f8; font-size: 0.9rem; padding: 5px 0; font-family: sans-serif; }
         .origin-label { color: #00f0ff; font-weight: bold; margin-right: 5px; }
 
@@ -122,7 +141,6 @@
         .hidden { display: none !important; }
         .no-data { opacity: 0.4; font-size: 0.8rem; font-style: italic; font-family: sans-serif; }
 
-        /* --- モバイル対応 --- */
         @media (max-width: 768px) {
             .list-section { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 10px; }
             .detail-section {
@@ -135,13 +153,18 @@
             h1 { font-size: 1rem; }
         }
 
-        /* スクロールバー */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: #1a4a5e; border-radius: 3px; }
     </style>
 </head>
 <body>
+
+<!-- ローディング画面 -->
+<div id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text">Accessing Latatalot Database...</div>
+</div>
 
 <header>
     <h1>LATATALOT DATABASE</h1>
@@ -167,6 +190,7 @@
 
     async function loadDictionary() {
         const status = document.getElementById('status');
+        const loader = document.getElementById('loader');
         try {
             const response = await fetch(SHEET_CSV_URL);
             const csvText = await response.text();
@@ -174,8 +198,16 @@
             status.innerText = '> SYSTEM ONLINE: DATABASE SYNC COMPLETED';
             renderFilters();
             renderDictionary();
+            
+            // 読み込み完了後に少しだけ余韻を残して消す
+            setTimeout(() => {
+                loader.classList.add('hidden');
+            }, 800);
+
         } catch (e) {
             status.innerText = '> ERROR: CONNECTION FAILED';
+            // エラー時もローダーを消さないとエラーメッセージが見えないため消す
+            loader.classList.add('hidden');
         }
     }
 
@@ -186,10 +218,7 @@
         for (let i = 1; i < rows.length; i++) {
             const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
             if (cols.length < 2) continue;
-            
-            // 品詞, 日本語, ラタタラ語, ニュアンス, 用例, 用例和訳, 類義語, 対義語, 関連語, 熟語, 外来語
             const [pos, jp, lata, nuance, example, exampleJp, syn, ant, rel, idioms, loanword] = cols;
-            
             if (!lata && !jp) continue;
             const wordKey = lata || `(unknown)-${i}`;
             if (!tempMap.has(wordKey)) {
