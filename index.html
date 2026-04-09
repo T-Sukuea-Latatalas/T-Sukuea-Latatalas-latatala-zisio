@@ -94,12 +94,34 @@
             background: rgba(255, 255, 255, 0.03); border: 1px solid #1a4a5e;
             padding: 10px; cursor: pointer; transition: 0.2s;
             position: relative;
+            overflow: hidden; /* はみ出し防止 */
         }
         .word-card:hover { border-color: #00f0ff; background: rgba(0, 240, 255, 0.08); }
         .word-card.selected { border-color: #ff2a7a; background: rgba(255, 42, 122, 0.1); }
 
-        .card-lata { display: block; font-size: 1.2rem; color: #ff2a7a; margin-bottom: 2px; }
-        .card-jp { font-size: 0.75rem; color: #ffffff; opacity: 0.8; }
+        /* フェード効果の追加 */
+        .card-lata { 
+            display: block; 
+            font-size: 1.2rem; 
+            color: #ff2a7a; 
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            /* 右端をフェードアウトさせるマスク */
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
+        }
+        .card-jp { 
+            font-size: 0.75rem; 
+            color: #ffffff; 
+            opacity: 0.8;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            /* 右端をフェードアウトさせるマスク */
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
+        }
 
         /* 詳細パネル内の要素 */
         .detail-header { border-bottom: 1px solid #ff2a7a; margin-bottom: 15px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; }
@@ -195,7 +217,6 @@
             const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
             if (cols.length < 2) continue;
             
-            // 11列目(loanword)まで取得
             const [pos, jp, lata, nuance, example, exampleJp, syn, ant, rel, idioms, loanword] = cols;
             
             if (!lata && !jp) continue;
