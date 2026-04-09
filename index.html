@@ -20,7 +20,7 @@
 
         /* SF・サイバーパンク風スタイル */
         body { 
-            font-family: 'Segoe UI', "Meiryo", sans-serif; 
+            font-family: 'Segoe UI', "Meiryo", "Hiragino Kaku Gothic ProN", sans-serif; 
             margin: 0; background-color: #05050a;
             color: #c5d3e8; line-height: 1.6;
             background-image: 
@@ -123,31 +123,26 @@
         .idiom-lata { color: #ff2a7a; font-size: 1rem; }
         .idiom-jp { font-size: 0.75rem; margin-left: 8px; }
 
+        /* 外来語のスタイル */
+        .origin-info { color: #8ab4f8; font-size: 0.85rem; padding: 4px 0; font-family: sans-serif; }
+        .origin-label { color: #00f0ff; font-weight: bold; margin-right: 5px; }
+
         .empty-notice { text-align: center; margin-top: 50px; color: #1a4a5e; font-family: monospace; font-size: 0.8rem; }
         .hidden { display: none !important; }
         .no-data { opacity: 0.4; font-size: 0.75rem; font-style: italic; font-family: sans-serif; }
 
-        /* --- モバイル対応用メディアクエリ --- */
+        /* --- モバイル対応 --- */
         @media (max-width: 768px) {
-            .list-section {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                flex: 1;
-            }
+            .list-section { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); flex: 1; }
             .detail-section {
-                position: absolute;
-                top: 0; right: 0; bottom: 0; left: 0;
-                width: auto; min-width: 0;
-                transform: translateX(100%); /* 初期状態は右に隠す */
-                z-index: 100;
-                border-left: none;
+                position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+                width: auto; min-width: 0; transform: translateX(100%);
+                z-index: 100; border-left: none;
             }
-            .detail-section.active {
-                transform: translateX(0);
-            }
+            .detail-section.active { transform: translateX(0); }
             .close-detail { display: block; }
         }
 
-        /* スクロールバー */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: #1a4a5e; border-radius: 3px; }
@@ -199,14 +194,17 @@
         for (let i = 1; i < rows.length; i++) {
             const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
             if (cols.length < 2) continue;
-            const [pos, jp, lata, nuance, example, exampleJp, syn, ant, rel, idioms] = cols;
+            
+            // 11列目(loanword)まで取得
+            const [pos, jp, lata, nuance, example, exampleJp, syn, ant, rel, idioms, loanword] = cols;
+            
             if (!lata && !jp) continue;
             const wordKey = lata || `(sisok)-${i}`;
             if (!tempMap.has(wordKey)) {
                 tempMap.set(wordKey, { id: i, lata: lata, meanings: [], allPos: new Set() });
             }
             const entry = tempMap.get(wordKey);
-            entry.meanings.push({ pos, jp, nuance, example, exampleJp, syn, ant, rel, idioms });
+            entry.meanings.push({ pos, jp, nuance, example, exampleJp, syn, ant, rel, idioms, loanword });
             if (pos) { entry.allPos.add(pos); allPosList.add(pos); }
         }
         dictionaryArray = Array.from(tempMap.values());
@@ -253,22 +251,30 @@
                 });
             }
 
-            // フォント出し分けロジック
             const wrapLata = (text) => text ? `<span class="lata-font">${text}</span>` : '<span class="no-data">None</span>';
 
             meaningsHtml += `
                 <div class="detail-item">
                     <div>${m.pos ? `<span class="detail-pos">${m.pos}</span>` : ''}<span class="detail-jp">${m.jp}</span></div>
+                    
+                    ${m.loanword ? `
+                        <span class="section-title">[ORIGIN]</span>
+                        <div class="origin-info"><span class="origin-label">Loanword:</span>${m.loanword}</div>
+                    ` : ''}
+
                     <span class="section-title">[Nuance]</span>
                     <div>${m.nuance || '<span class="no-data">No description available</span>'}</div>
+                    
                     <span class="section-title">[Example]</span>
                     ${m.example ? `<span class="lata-font ex-lata">${m.example}</span>` : '<span class="no-data">No example</span>'}
                     ${m.exampleJp ? `<span class="ex-jp">${m.exampleJp}</span>` : ''}
+                    
                     <div class="rel-grid">
                         <div><span class="rel-label">SYN:</span>${wrapLata(m.syn)}</div>
                         <div><span class="rel-label">ANT:</span>${wrapLata(m.ant)}</div>
                         <div><span class="rel-label">REL:</span>${wrapLata(m.rel)}</div>
                     </div>
+                    
                     <span class="section-title">[Idioms]</span>
                     <div>${idiomsHtml || '<span class="no-data">No idioms registered</span>'}</div>
                 </div>
@@ -282,7 +288,7 @@
             </div>
             ${meaningsHtml}
         `;
-        detailPane.classList.add('active'); // スマホで表示
+        detailPane.classList.add('active');
         detailPane.scrollTop = 0;
     }
 
